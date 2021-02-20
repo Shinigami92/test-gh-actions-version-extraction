@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  extract-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      - name: Read package.json version
+        uses: tyankatsu0105/read-package-version-actions@v1
+        id: package-version
+
+      - name: Publish Release
+        if: ${{ contains(steps.package-version.outputs.version, '-') == false }}
+        run: npm publish --dry-run
+
+      - name: Publish Beta
+        if: ${{ contains(steps.package-version.outputs.version, 'beta') }}
+        run: npm publish --dry-run --tag beta
